@@ -16,6 +16,7 @@ import com.itextpdf.layout.properties.HorizontalAlignment;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -23,6 +24,7 @@ public class BoringPDF {
     private final String[] info1 = {"Boring ID: \n", "Logged By: \n", "Company: \n"};
     private final String[] info2 = {"Location: \n", "Equipment: \n", "Date: \n", "Time: \n"};
     private final String[] header = {"Graphical\nLog", "Top Depth\n(FT)", "Thick.\n(FT)", "Bt.Elev.\n(FT)", "Material\nDescription"};
+    private final DecimalFormat df = new DecimalFormat("0.00");
 
     private BoringObjectDecoder boringData;
 
@@ -82,16 +84,16 @@ public class BoringPDF {
         ArrayList<String> types = boringData.getTypes();
         ArrayList<String> descriptions = boringData.getDescriptions();
 
-        Float topDepth = 0f;
+        float topDepth = 0f;
         for(int i = 0; i < depths.size(); i++) {
-            Float depth = depths.get(i);
-            Float thickness = depth - topDepth;
+            float depth = depths.get(i);
+            float thickness = depth - topDepth;
             // Graphical Log
             tableBoring.addCell(new Cell().add(new Paragraph(types.get(i)).setFont(font)).setFontSize(9).setHeight(thickness*35));
             // Top Depth
-            tableBoring.addCell(new Cell().add(new Paragraph("\t"+topDepth.toString()).setFont(font)).setFontSize(9).setBorderTop(new DashedBorder(0.6f)).setBorderRight(Border.NO_BORDER));
+            tableBoring.addCell(new Cell().add(new Paragraph("\t"+df.format(topDepth)).setFont(font)).setFontSize(9).setBorderTop(new DashedBorder(0.6f)).setBorderRight(Border.NO_BORDER));
             // Thickness
-            tableBoring.addCell(new Cell().add(new Paragraph("\t"+thickness.toString()).setFont(font)).setFontSize(9).setBorderTop(new DashedBorder(0.6f)).setBorderRight(Border.NO_BORDER).setBorderLeft(Border.NO_BORDER));
+            tableBoring.addCell(new Cell().add(new Paragraph("\t"+df.format(thickness)).setFont(font)).setFontSize(9).setBorderTop(new DashedBorder(0.6f)).setBorderRight(Border.NO_BORDER).setBorderLeft(Border.NO_BORDER));
             // Bottom Elevation
             tableBoring.addCell(new Cell().add(new Paragraph("\t-" + depth).setFont(font)).setFontSize(9).setBorderTop(new DashedBorder(0.6f)).setBorderRight(Border.NO_BORDER).setBorderLeft(Border.NO_BORDER));
             // Material Description
