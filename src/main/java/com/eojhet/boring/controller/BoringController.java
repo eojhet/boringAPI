@@ -7,6 +7,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,7 +17,7 @@ import java.io.IOException;
 
 @RestController
 public class BoringController {
-
+    @CrossOrigin(origins = "https://boring.eojhet.com")
     @PostMapping(value = "/boring",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_PDF_VALUE)
@@ -45,7 +46,6 @@ public class BoringController {
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDispositionFormData(pdfName, pdfName);
         headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
-        headers.setAccessControlAllowOrigin("*");
 
         CleanOutput.cleanIfOver(10);
 
