@@ -20,14 +20,26 @@ public class BoringController {
     @PostMapping(value = "/boring",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_PDF_VALUE)
-    public ResponseEntity<byte[]> createPDF(@RequestBody String jsonObject) throws IOException {
+    public ResponseEntity<byte[]> createPDF(@RequestBody String jsonObject) {
 
         BoringPDF boringPDF = new BoringPDF(jsonObject);
-        String[] pdfPath = boringPDF.make();
+        String[] pdfPath = new String[0];
+        try {
+            pdfPath = boringPDF.make();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
         File path = new File(pdfPath[0]);
         String pdfName = pdfPath[1] + ".pdf";
 
-        byte[] contents = ByteStream.fileStream(path);
+        byte[] contents = new byte[0];
+        try {
+            contents = ByteStream.fileStream(path);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);

@@ -13,31 +13,14 @@ import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.properties.HorizontalAlignment;
-import com.itextpdf.layout.properties.UnitValue;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 
-// https://kb.itextpdf.com/home/it7kb/ebooks/itext-7-jump-start-tutorial-for-java/chapter-1-introducing-basic-building-blocks
-// https://github.com/itext/i7js-jumpstart/tree/develop/src/main/java/tutorial
-// https://api.itextpdf.com/iText7/java/7.1.16/
-
 public class BoringPDF {
-    public final static String JSONOBJECT = "{" +
-            "\"label\":\"MW-1\"," +
-            "\"logBy\":\"Joe Gonzalez\"," +
-            "\"company\":\"Bay Environmental inc.\"," +
-            "\"location\":\"2048 Nags Head Rd\"," +
-            "\"equip\":\"Hand Auger\"," +
-            "\"date\":\"2022-03-17\"," +
-            "\"time\":\"10:30\"," +
-            "\"depths\":[\"0.25\",\"1\",\"8\",\"12\",\"16\"]," +
-            "\"types\":[\"topSoil\",\"sandyClay\",\"clay\",\"sand\",\"siltySand\"]," +
-            "\"descriptions\":[\"Top soil\",\"Sandy clay\",\"Dark red clay\",\"Beige sand\",\"Light beige silty sand\"]}";
-
-    private final String[] info1 = {"Boring Label: \n", "Logged By: \n", "Company: \n"};
+    private final String[] info1 = {"Boring ID: \n", "Logged By: \n", "Company: \n"};
     private final String[] info2 = {"Location: \n", "Equipment: \n", "Date: \n", "Time: \n"};
     private final String[] header = {"Graphical\nLog", "Top Depth\n(FT)", "Thick.\n(FT)", "Bt.Elev.\n(FT)", "Material\nDescription"};
 
@@ -48,7 +31,7 @@ public class BoringPDF {
     }
 
     public String[] make() throws IOException {
-        String fileName = boringData.getLabel() + " " + boringData.getLocation();
+        String fileName = boringData.getId() + " " + boringData.getLocation();
         String filePath = "output/" + new Date().toInstant().toString() + fileName + ".pdf";
 
         PdfWriter writer = new PdfWriter(new FileOutputStream(filePath));
@@ -72,7 +55,7 @@ public class BoringPDF {
 
         Table tableInfo = new Table(new float[]{1,1,1}, true);
 
-        tableInfo.addCell(new Cell().add(new Paragraph(info1[0] + boringData.getLabel()).setFont(font)).setFontSize(9).setBorderBottom(Border.NO_BORDER));
+        tableInfo.addCell(new Cell().add(new Paragraph(info1[0] + boringData.getId()).setFont(font)).setFontSize(9).setBorderBottom(Border.NO_BORDER));
         tableInfo.addCell(new Cell().add(new Paragraph(info1[1] + boringData.getLogBy()).setFont(font)).setFontSize(9).setBorderBottom(Border.NO_BORDER));
         tableInfo.addCell(new Cell().add(new Paragraph(info1[2] + boringData.getCompany()).setFont(font)).setFontSize(9).setBorderBottom(Border.NO_BORDER));
 
@@ -123,11 +106,5 @@ public class BoringPDF {
 
         return new String[]{filePath, fileName};
     }
-
-    public static void main(String[] args) throws IOException {
-        BoringPDF boringValues = new BoringPDF(JSONOBJECT);
-        System.out.println(boringValues.make());
-    }
-
 
 }

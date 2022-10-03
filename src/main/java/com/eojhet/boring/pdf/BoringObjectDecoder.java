@@ -25,8 +25,8 @@ public class BoringObjectDecoder {
         }
     }
 
-    public String getLabel() {
-        return boringData.get("label").toString();
+    public String getId() {
+        return boringData.get("id").toString();
     }
 
     public String getLogBy() {
@@ -85,46 +85,4 @@ public class BoringObjectDecoder {
 
         return descriptionArray;
     }
-
-    public static void main(String[] args) throws ParseException {
-        String jsonObject = "{" +
-                "\"label\":\"MW-1\"," +
-                "\"logBy\":\"Joe Gonzalez\"," +
-                "\"company\":\"Bay Environmental inc.\"," +
-                "\"location\":\"2048 Nags Head Rd\"," +
-                "\"equip\":\"Hand Auger\"," +
-                "\"date\":\"2022-03-17\"," +
-                "\"time\":\"10:30\"," +
-                "\"depths\":[\"1\",\"3\",\"8\",\"12\",\"16\"]," +
-                "\"types\":[\"topSoil\",\"sandyClay\",\"clay\",\"sand\",\"siltySand\"]," +
-                "\"descriptions\":[\"Top soil\",\"Sandy clay\",\"Dark red clay\",\"Beige sand\",\"Light beige silty sand\"]}";
-
-        BoringObjectDecoder decode = new BoringObjectDecoder(jsonObject);
-        ArrayList<Float> depths = decode.getDepths();
-        ArrayList<String> types = decode.getTypes();
-        ArrayList<String> descriptions = decode.getDescriptions();
-
-        System.out.println(decode.getLabel());
-        System.out.println(decode.getLogBy());
-        System.out.println(decode.getCompany());
-        System.out.println(decode.getLocation());
-        System.out.println(decode.getEquipment());
-        System.out.println(decode.getDate());
-        System.out.println(decode.getTime());
-
-        for (Float depth : depths) {
-            System.out.println(depth);
-        }
-
-        for (String type : types) {
-            System.out.println(type);
-        }
-
-        for (String desc : descriptions) {
-            System.out.println(desc);
-        }
-
-
-    }
-
 }
