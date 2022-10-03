@@ -23,7 +23,7 @@ public class BoringController {
     public ResponseEntity<byte[]> createPDF(@RequestBody String jsonObject) {
 
         BoringPDF boringPDF = new BoringPDF(jsonObject);
-        String[] pdfPath = new String[0];
+        String[] pdfPath;
         try {
             pdfPath = boringPDF.make();
         } catch (IOException e) {
@@ -33,7 +33,7 @@ public class BoringController {
         File path = new File(pdfPath[0]);
         String pdfName = pdfPath[1] + ".pdf";
 
-        byte[] contents = new byte[0];
+        byte[] contents;
         try {
             contents = ByteStream.fileStream(path);
         } catch (IOException e) {
@@ -45,11 +45,12 @@ public class BoringController {
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDispositionFormData(pdfName, pdfName);
         headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+        headers.setAccessControlAllowOrigin("*");
 
         CleanOutput.cleanIfOver(10);
 
       return new ResponseEntity<>(contents, headers,  HttpStatus.CREATED);
-    };
+    }
 
 
 }
