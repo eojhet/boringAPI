@@ -91,13 +91,13 @@ public class BoringPDF {
             // Graphical Log
             tableBoring.addCell(new Cell().add(new Paragraph(types.get(i)).setFont(font)).setFontSize(9).setHeight(thickness*35));
             // Top Depth
-            tableBoring.addCell(new Cell().add(new Paragraph("\t"+df.format(topDepth)).setFont(font)).setFontSize(9).setBorderTop(new DashedBorder(0.6f)).setBorderRight(Border.NO_BORDER));
+            tableBoring.addCell(new Cell().add(new Paragraph("\t"+df.format(topDepth)).setFont(font)).setFontSize(9).setBorderTop(new DashedBorder(0.6f)).setBorderRight(Border.NO_BORDER).setBorderBottom(Border.NO_BORDER));
             // Thickness
-            tableBoring.addCell(new Cell().add(new Paragraph("\t"+df.format(thickness)).setFont(font)).setFontSize(9).setBorderTop(new DashedBorder(0.6f)).setBorderRight(Border.NO_BORDER).setBorderLeft(Border.NO_BORDER));
+            tableBoring.addCell(new Cell().add(new Paragraph("\t"+df.format(thickness)).setFont(font)).setFontSize(9).setBorderTop(new DashedBorder(0.6f)).setBorderRight(Border.NO_BORDER).setBorderLeft(Border.NO_BORDER).setBorderBottom(Border.NO_BORDER));
             // Bottom Elevation
-            tableBoring.addCell(new Cell().add(new Paragraph("\t-" + depth).setFont(font)).setFontSize(9).setBorderTop(new DashedBorder(0.6f)).setBorderRight(Border.NO_BORDER).setBorderLeft(Border.NO_BORDER));
+            tableBoring.addCell(new Cell().add(new Paragraph("\t-" + depth).setFont(font)).setFontSize(9).setBorderTop(new DashedBorder(0.6f)).setBorderRight(Border.NO_BORDER).setBorderLeft(Border.NO_BORDER).setBorderBottom(Border.NO_BORDER));
             // Material Description
-            tableBoring.addCell(new Cell().add(new Paragraph(descriptions.get(i)).setFont(font)).setFontSize(9).setBorderTop(new DashedBorder(0.6f)).setBorderLeft(Border.NO_BORDER));
+            tableBoring.addCell(new Cell().add(new Paragraph(descriptions.get(i)).setFont(font)).setFontSize(9).setBorderTop(new DashedBorder(0.6f)).setBorderRight(Border.NO_BORDER).setBorderLeft(Border.NO_BORDER).setBorderBottom(Border.NO_BORDER));
             topDepth += thickness;
         }
 
