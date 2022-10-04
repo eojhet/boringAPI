@@ -41,6 +41,8 @@ public class BoringObjectDecoder {
         return boringData.get("location").toString();
     }
 
+    public String getSiteName() {return boringData.get("siteName").toString(); }
+
     public String getEquipment() {
         return boringData.get("equip").toString();
     }

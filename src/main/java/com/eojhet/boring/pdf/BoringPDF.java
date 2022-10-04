@@ -21,8 +21,8 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class BoringPDF {
-    private final String[] info1 = {"Boring ID: \n", "Logged By: \n", "Company: \n"};
-    private final String[] info2 = {"Location: \n", "Equipment: \n", "Date: \n", "Time: \n"};
+    private final String[] info1 = {"Boring ID: \n", "Logged By: \n", "Company: \n", "Equipment: \n"};
+    private final String[] info2 = {"Location: \n", "Site Name: \n", "Date: \n", "Time: \n"};
     private final String[] header = {"Graphical\nLog", "Top Depth\n(FT)", "Thick.\n(FT)", "Bt.Elev.\n(FT)", "Material\nDescription"};
     private final DecimalFormat df = new DecimalFormat("0.00");
 
@@ -55,18 +55,19 @@ public class BoringPDF {
 
         document.add(title);
 
-        Table tableInfo = new Table(new float[]{1,1,1}, true);
+        Table tableInfo = new Table(new float[]{1,1,1,1}, true);
 
         tableInfo.addCell(new Cell().add(new Paragraph(info1[0] + boringData.getId()).setFont(font)).setFontSize(9).setBorderBottom(Border.NO_BORDER));
         tableInfo.addCell(new Cell().add(new Paragraph(info1[1] + boringData.getLogBy()).setFont(font)).setFontSize(9).setBorderBottom(Border.NO_BORDER));
         tableInfo.addCell(new Cell().add(new Paragraph(info1[2] + boringData.getCompany()).setFont(font)).setFontSize(9).setBorderBottom(Border.NO_BORDER));
+        tableInfo.addCell(new Cell().add(new Paragraph(info1[3] + boringData.getEquipment()).setFont(font)).setFontSize(9).setBorderBottom(Border.NO_BORDER));
 
         document.add(tableInfo);
 
         Table tableInfo2 = new Table(new float[]{3,2,1,1}, true);
 
         tableInfo2.addCell(new Cell().add(new Paragraph(info2[0] + boringData.getLocation()).setFont(font)).setFontSize(9).setBorderBottom(Border.NO_BORDER));
-        tableInfo2.addCell(new Cell().add(new Paragraph(info2[1] + boringData.getEquipment()).setFont(font)).setFontSize(9).setBorderBottom(Border.NO_BORDER));
+        tableInfo2.addCell(new Cell().add(new Paragraph(info2[1] + boringData.getSiteName()).setFont(font)).setFontSize(9).setBorderBottom(Border.NO_BORDER));
         tableInfo2.addCell(new Cell().add(new Paragraph(info2[2] + boringData.getDate()).setFont(font)).setFontSize(9).setBorderBottom(Border.NO_BORDER));
         tableInfo2.addCell(new Cell().add(new Paragraph(info2[3] + boringData.getTime()).setFont(font)).setFontSize(9).setBorderBottom(Border.NO_BORDER));
 
