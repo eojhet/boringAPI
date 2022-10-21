@@ -1,5 +1,6 @@
 package com.eojhet.boring.pdf;
 
+import com.eojhet.boring.services.BoringObjectDecoder;
 import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
@@ -15,21 +16,18 @@ import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.element.Image;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
-import com.itextpdf.layout.properties.HorizontalAlignment;
 import com.itextpdf.layout.properties.VerticalAlignment;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
 public class BoringPDF {
-    private final String[] info1 = {"Boring ID: \n", "Logged By: \n", "Company: \n", "Equipment: \n"};
-    private final String[] info2 = {"Location: \n", "Site Name: \n", "Date: \n", "Time: \n"};
-    private final String[] header = {"Graphical\nLog", "Top Depth\n(FT)", "Thick.\n(FT)", "Bt.Elev.\n(FT)", "Material\nDescription"};
     private final DecimalFormat df = new DecimalFormat("0.00");
-    private BoringObjectDecoder boringData;
+    private final BoringObjectDecoder boringData;
 
     public BoringPDF(String boringJson) {
         this.boringData = new BoringObjectDecoder(boringJson);
@@ -37,103 +35,104 @@ public class BoringPDF {
 
     public String[] make() throws IOException {
         String fileName = boringData.getId() + " " + boringData.getLocation();
-        String filePath = "output/" + new Date().toInstant().toString() + fileName + ".pdf";
+//        String filePath = "output/" + new Date().toInstant().toString() + fileName + " Boring Log.pdf";
+        String filePath = "output/BoringTest.pdf";
 
         PdfWriter writer = new PdfWriter(new FileOutputStream(filePath));
         PdfDocument pdf = new PdfDocument(writer);
         Document document = new Document(pdf, PageSize.LETTER);
-
         document.setMargins(20, 30, 20, 30);
-        PdfFont font = PdfFontFactory.createFont(StandardFonts.HELVETICA);
-        PdfFont bold = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
 
-        Table title = new Table(new float[]{1.5f,2,1.1f},true);
-        Cell titleCell = new Cell().setHorizontalAlignment(HorizontalAlignment.RIGHT);
-        titleCell.add(new Paragraph("BORING LOG by The Boring App").setFont(bold).setFontSize(10));
-        titleCell.setBorderBottom(Border.NO_BORDER).setBorderRight(Border.NO_BORDER).setBorderLeft(Border.NO_BORDER);
+        SiteInfo siteInfo = new SiteInfo();
 
-        title.addCell(new Cell().add(new Paragraph("")).setBorderRight(Border.NO_BORDER));
-        title.addCell(titleCell);
-        title.addCell(new Cell().add(new Paragraph("")).setBorderLeft(Border.NO_BORDER));
+        document.add(siteInfo.title());
+        document.add(siteInfo.info1(boringData));
+        document.add(siteInfo.info2(boringData));
+        document.add(boringLog());
+        document.close();
 
-        document.add(title);
+        return new String[]{filePath, fileName};
+    }
 
-        Table tableInfo = new Table(new float[]{1,1,1,1}, true);
+    private Table boringLog() {
+        PdfFont font;
+        PdfFont bold;
 
-        tableInfo.addCell(new Cell().add(new Paragraph(info1[0] + boringData.getId()).setFont(font)).setFontSize(9).setBorderBottom(Border.NO_BORDER));
-        tableInfo.addCell(new Cell().add(new Paragraph(info1[1] + boringData.getLogBy()).setFont(font)).setFontSize(9).setBorderBottom(Border.NO_BORDER));
-        tableInfo.addCell(new Cell().add(new Paragraph(info1[2] + boringData.getCompany()).setFont(font)).setFontSize(9).setBorderBottom(Border.NO_BORDER));
-        tableInfo.addCell(new Cell().add(new Paragraph(info1[3] + boringData.getEquipment()).setFont(font)).setFontSize(9).setBorderBottom(Border.NO_BORDER));
-
-        document.add(tableInfo);
-
-        Table tableInfo2 = new Table(new float[]{3,2,1,1}, true);
-
-        tableInfo2.addCell(new Cell().add(new Paragraph(info2[0] + boringData.getLocation()).setFont(font)).setFontSize(9).setBorderBottom(Border.NO_BORDER));
-        tableInfo2.addCell(new Cell().add(new Paragraph(info2[1] + boringData.getSiteName()).setFont(font)).setFontSize(9).setBorderBottom(Border.NO_BORDER));
-        tableInfo2.addCell(new Cell().add(new Paragraph(info2[2] + boringData.getDate()).setFont(font)).setFontSize(9).setBorderBottom(Border.NO_BORDER));
-        tableInfo2.addCell(new Cell().add(new Paragraph(info2[3] + boringData.getTime()).setFont(font)).setFontSize(9).setBorderBottom(Border.NO_BORDER));
-
-        document.add(tableInfo2);
+        try {
+            font = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+            bold = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         Table tableBoring = new Table(new float[]{1,1,1,1,5},true);
 
+        // Build log heading
+        String[] header = {"Graphical\nLog", "Top Depth\n(FT)", "Thick.\n(FT)", "Bt.Elev.\n(FT)", "Material\nDescription"};
         for (String label : header) {
             tableBoring.addCell(new Cell().add(new Paragraph(label).setFont(bold)).setFontSize(9));
         }
 
+        // Creates empty margin between log heading and log
         tableBoring.addCell(new Cell(1,5).add(new Paragraph(" ")).setBorderRight(Border.NO_BORDER).setBorderLeft(Border.NO_BORDER));
 
         ArrayList<Float> depths = boringData.getDepths();
         ArrayList<String> types = boringData.getTypes();
         ArrayList<String> descriptions = boringData.getDescriptions();
 
-        int scale = (int) Math.floor(30f/(depths.get(depths.size() -1)) * 20f);
+        // scale will always fit graphic boring log on single page
+        float scale = (float) Math.floor(30f/(depths.get(depths.size() -1)) * 20f);
         if (scale > 30) {
             scale = 30;
         }
 
         float topDepth = 0f;
+        Cell boringCell = new Cell().setFont(font).setFontSize(9).setBorderTop(new DashedBorder(0.6f)).setBorderRight(Border.NO_BORDER).setBorderLeft(Border.NO_BORDER).setBorderBottom(Border.NO_BORDER);
 
         for(int i = 0; i < depths.size(); i++) {
             float depth = depths.get(i);
             float thickness = depth - topDepth;
 
-            String pattern = "src/main/resources/patterns/" + types.get(i) + ".png";
-
-            ImageData imageData = ImageDataFactory.create(pattern);
+            // Build image data from png and pattern inside of paragraph to insert into log cell
+            String patternLocation = "src/main/resources/patterns/" + types.get(i) + ".png";
+            ImageData imageData;
+            try {
+                imageData = ImageDataFactory.create(patternLocation);
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
             Image pdfImg = new Image(imageData);
             pdfImg.setWidth(10).setHeight(10);
+            Paragraph pattern = new Paragraph();
 
-            // Graphical Log
-//            tableBoring.addCell(new Cell().add(new Paragraph(types.get(i)).setFont(font)).setFontSize(9).setHeight(thickness*35));
+            // calculate how many pattern elements fit into graphic boring log cell paragraph
+            int amount = (int) Math.ceil((thickness * scale)/10f * 6f);
 
-            Paragraph tester = new Paragraph();
-            int amount = (int) Math.ceil((thickness * Float.valueOf(scale))/10f * 6f);
+            // Place pattern elements into graphic boring log cell paragraph
             for (int j = 0; j < amount; j++) {
-                tester.add(pdfImg);
+                pattern.add(pdfImg);
             }
-            tableBoring.addCell(new Cell().setVerticalAlignment(VerticalAlignment.MIDDLE).setPadding(0).add(tester).setHeight(thickness*scale));
+
+            tableBoring.addCell(new Cell().setVerticalAlignment(VerticalAlignment.MIDDLE).setPadding(0).add(pattern).setHeight(thickness*scale));
             // Top Depth
-            tableBoring.addCell(new Cell().add(new Paragraph("\t"+df.format(topDepth)).setFont(font)).setFontSize(9).setBorderTop(new DashedBorder(0.6f)).setBorderRight(Border.NO_BORDER).setBorderBottom(Border.NO_BORDER));
+            tableBoring.addCell(boringCell.clone(false).add(new Paragraph("\t"+df.format(topDepth))));
             // Thickness
-            tableBoring.addCell(new Cell().add(new Paragraph("\t"+df.format(thickness)).setFont(font)).setFontSize(9).setBorderTop(new DashedBorder(0.6f)).setBorderRight(Border.NO_BORDER).setBorderLeft(Border.NO_BORDER).setBorderBottom(Border.NO_BORDER));
+            tableBoring.addCell(boringCell.clone(false).add(new Paragraph("\t"+df.format(thickness))));
             // Bottom Elevation
-            tableBoring.addCell(new Cell().add(new Paragraph("\t-" + depth).setFont(font)).setFontSize(9).setBorderTop(new DashedBorder(0.6f)).setBorderRight(Border.NO_BORDER).setBorderLeft(Border.NO_BORDER).setBorderBottom(Border.NO_BORDER));
+            tableBoring.addCell(boringCell.clone(false).add(new Paragraph("\t-" + depth)));
             // Material Description
-            tableBoring.addCell(new Cell().add(new Paragraph(descriptions.get(i)).setFont(font)).setFontSize(9).setBorderTop(new DashedBorder(0.6f)).setBorderRight(Border.NO_BORDER).setBorderLeft(Border.NO_BORDER).setBorderBottom(Border.NO_BORDER));
+            tableBoring.addCell(boringCell.clone(false).add(new Paragraph(descriptions.get(i))));
             topDepth += thickness;
         }
-        tableBoring.addCell(new Cell().setBorder(Border.NO_BORDER).add(new Paragraph(depths.get(depths.size() -1) + " FT bgs").setFont(font)).setFontSize(9));
-        for (int i = 0; i < 4; i++) {
-            tableBoring.addCell(new Cell().setBorder(Border.NO_BORDER));
-        }
-        document.add(tableBoring);
-        tableBoring.complete();
-//        document.add(new Table(1).addCell(new Cell().setBorder(Border.NO_BORDER).add(new Paragraph(depths.get(depths.size() -1) + " ft"))));
-        document.close();
 
-        return new String[]{filePath, fileName};
+        // Total depth at log bottom
+        boringCell.setBorderTop(Border.NO_BORDER);
+        tableBoring.addCell(boringCell.clone(false).add(new Paragraph(depths.get(depths.size() -1) + " FT bgs").setFont(font)).setFontSize(9));
+        for (int i = 0; i < 4; i++) {
+            tableBoring.addCell(boringCell);
+        }
+
+        return tableBoring;
     }
 
     public static void main(String[] args) throws IOException {

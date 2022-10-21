@@ -1,4 +1,4 @@
-package com.eojhet.boring.pdf;
+package com.eojhet.boring.services;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -7,13 +7,13 @@ import org.json.simple.parser.ParseException;
 
 import java.util.ArrayList;
 
-public class BoringObjectDecoder {
+public class WellConstructionObjectDecoder implements ObjectDecoder{
     private String jsonObject;
     private JSONParser parser = new JSONParser();
     private Object obj;
     private JSONObject boringData;
 
-    public BoringObjectDecoder(String jsonObject) {
+    public WellConstructionObjectDecoder(String jsonObject) {
         this.jsonObject = jsonObject;
 
         try {
@@ -55,9 +55,30 @@ public class BoringObjectDecoder {
         return boringData.get("time").toString();
     }
 
-    public ArrayList<Float> getDepths() {
+    // Construction Well Specific Data:
+
+    public float getStandupHeight() {
+        float standupHeight = Float.parseFloat(boringData.get("standupHeight").toString());
+        return standupHeight;
+    }
+
+    public float getCasingDepth() {
+        float casingDepth = Float.parseFloat(boringData.get("casingDepth").toString());
+        return casingDepth;
+    }
+
+    public String getCasingDescription() { return boringData.get("casingDesc").toString(); }
+
+    public float getScreenDepth() {
+        float screenDepth = Float.parseFloat(boringData.get("screenDepth").toString());
+        return screenDepth;
+    }
+
+    public String getScreenDescription() { return boringData.get("screenDesc").toString(); }
+
+    public ArrayList<Float> getMaterialDepths() {
         ArrayList<Float> depthsArray = new ArrayList<>();
-        JSONArray objectArray = (JSONArray) boringData.get("depths");
+        JSONArray objectArray = (JSONArray) boringData.get("materialDepths");
 
         for (Object depth : objectArray) {
             depthsArray.add(Float.parseFloat(depth.toString()));
@@ -66,9 +87,9 @@ public class BoringObjectDecoder {
         return depthsArray;
     }
 
-    public ArrayList<String> getTypes() {
+    public ArrayList<String> getMaterialTypes() {
         ArrayList<String> typesArray = new ArrayList<>();
-        JSONArray objectArray = (JSONArray) boringData.get("types");
+        JSONArray objectArray = (JSONArray) boringData.get("materialTypes");
 
         for (Object type : objectArray) {
             typesArray.add(type.toString());
@@ -77,9 +98,9 @@ public class BoringObjectDecoder {
         return typesArray;
     }
 
-    public ArrayList<String> getDescriptions() {
+    public ArrayList<String> getMaterialDescriptions() {
         ArrayList<String> descriptionArray = new ArrayList<>();
-        JSONArray objectArray = (JSONArray) boringData.get("descriptions");
+        JSONArray objectArray = (JSONArray) boringData.get("materialDescriptions");
 
         for (Object type : objectArray) {
             descriptionArray.add(type.toString());
