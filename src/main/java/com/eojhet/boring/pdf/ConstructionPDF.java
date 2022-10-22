@@ -19,7 +19,6 @@ import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.properties.UnitValue;
 import com.itextpdf.layout.properties.VerticalAlignment;
 
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -35,17 +34,12 @@ public class ConstructionPDF {
         this.boringData = new WellConstructionObjectDecoder(boringJson);
     }
 
-    public String[] make() {
+    public String[] make() throws IOException {
         String fileName = boringData.getId() + " " + boringData.getLocation() + " Construction Log.pdf";
-//        String filePath = "output/" + new Date().toInstant().toString() + fileName;
-        String filePath = "output/Construction.pdf";
+        String filePath = "output/" + new Date().toInstant().toString() + fileName;
+//        String filePath = "output/Construction.pdf";
 
-        PdfWriter writer;
-        try {
-            writer = new PdfWriter(new FileOutputStream(filePath));
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+        PdfWriter writer = new PdfWriter(new FileOutputStream(filePath));
         PdfDocument pdf = new PdfDocument(writer);
         Document document = new Document(pdf, PageSize.LETTER);
 
@@ -235,10 +229,10 @@ public class ConstructionPDF {
         return pattern;
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         // TEST
 
-        String boringObj = "{\"id\":\"MW-1\",\"location\":\"123 Franklin St, Chesapeake, VA\",\"siteName\":\"Albert Property\",\"logBy\":\"Dog Bounty\",\"company\":\"Steve's Holes Inc.\",\"equip\":\"Hand Auger\",\"date\":\"2021-09-13\",\"time\":\"07:50\",\"depths\":[\"1\",\"4\",\"8\",\"16\"],\"types\":[\"topSoil\",\"clay\",\"claySand\",\"sand\"],\"descriptions\":[\"Topsoil\",\"Hard red clay\",\"Loose beige clay sand\",\"Dark petroleum contaminated sand\"],\"standupHeight\":\"1.5\",\"casingDepth\":\"2\",\"casingDesc\":\"Two-inch solid PVC\",\"screenDepth\":\"16\",\"screenDesc\":\"Two-inch slotted PVC\",\"materialDepths\":[\"0.5\",\"1\",\"16\"],\"materialTypes\":[\"backFill\",\"seal\",\"filterPack\"],\"materialDescriptions\":[\"Topsoil\",\"Medium Bentonite Chips\",\"No. 2 Gravel Pack\"]}";
+        String boringObj = "{\"id\":\"MW-1\",\"location\":\"123 Franklin St, Chesapeake, VA\",\"siteName\":\"Albert Property\",\"logBy\":\"Dog Bounty\",\"company\":\"Steve's Holes Inc.\",\"equip\":\"Hand Auger\",\"date\":\"2021-09-13\",\"time\":\"07:50\",\"depths\":[\"1\",\"4\",\"8\",\"16\"],\"types\":[\"topSoil\",\"clay\",\"claySand\",\"sand\"],\"descriptions\":[\"Topsoil\",\"Hard red clay\",\"Loose beige clay sand\",\"Dark petroleum contaminated sand\"],\"standupHeight\":\"0.5\",\"casingDepth\":\"2\",\"casingDesc\":\"Two-inch solid PVC\",\"screenDepth\":\"16\",\"screenDesc\":\"Two-inch slotted PVC\",\"materialDepths\":[\"0.5\",\"1\",\"16\"],\"materialTypes\":[\"backFill\",\"seal\",\"filterPack\"],\"materialDescriptions\":[\"Topsoil\",\"Medium Bentonite Chips\",\"No. 2 Gravel Pack\"]}";
 
         new ConstructionPDF(boringObj).make();
     }

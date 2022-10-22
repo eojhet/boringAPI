@@ -17,7 +17,7 @@ import java.io.IOException;
 
 @RestController
 public class ConstructionController {
-//    @CrossOrigin(origins = "https://boring.eojhet.com")
+    @CrossOrigin(origins = "https://boring.eojhet.com")
     @PostMapping(value = "/construction",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_PDF_VALUE)
@@ -25,10 +25,13 @@ public class ConstructionController {
 
         ConstructionPDF constructionPDF = new ConstructionPDF(jsonObject);
         String[] pdfPath;
-        pdfPath = constructionPDF.make();
+        try {
+            pdfPath = constructionPDF.make();
+        } catch (IOException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
 
         File path = new File(pdfPath[0]);
-        String pdfName = pdfPath[1];
 
         byte[] contents;
         try {

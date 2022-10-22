@@ -18,7 +18,7 @@ public class SiteInfo {
 
     {
         try {
-            bold = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+            bold = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
             font = PdfFontFactory.createFont(StandardFonts.HELVETICA);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -28,9 +28,9 @@ public class SiteInfo {
     public Table title() {
         Table title = new Table(new float[]{1.5f,2,1.1f},true);
 
-        Cell titleCell = new Cell().setHorizontalAlignment(HorizontalAlignment.RIGHT).setFont(bold).setFontSize(10);
+        Cell titleCell = new Cell().setHorizontalAlignment(HorizontalAlignment.RIGHT).setFontSize(10);
         titleCell.setBorderBottom(Border.NO_BORDER).setBorderRight(Border.NO_BORDER).setBorderLeft(Border.NO_BORDER);
-        titleCell.add(new Paragraph("BORING LOG by The Boring App"));
+        titleCell.add(new Paragraph("BORING LOG by The Boring App").setFont(bold));
 
         title.addCell(new Cell().add(new Paragraph("")).setBorderRight(Border.NO_BORDER));
         title.addCell(titleCell);

@@ -35,8 +35,8 @@ public class BoringPDF {
 
     public String[] make() throws IOException {
         String fileName = boringData.getId() + " " + boringData.getLocation();
-//        String filePath = "output/" + new Date().toInstant().toString() + fileName + " Boring Log.pdf";
-        String filePath = "output/BoringTest.pdf";
+        String filePath = "output/" + new Date().toInstant().toString() + fileName + " Boring Log.pdf";
+//        String filePath = "output/BoringTest.pdf";
 
         PdfWriter writer = new PdfWriter(new FileOutputStream(filePath));
         PdfDocument pdf = new PdfDocument(writer);
@@ -65,12 +65,12 @@ public class BoringPDF {
             throw new RuntimeException(e);
         }
 
-        Table tableBoring = new Table(new float[]{1,1,1,1,5},true);
+        Table tableBoring = new Table(new float[]{0.85f,1,1,1,5},true);
 
         // Build log heading
         String[] header = {"Graphical\nLog", "Top Depth\n(FT)", "Thick.\n(FT)", "Bt.Elev.\n(FT)", "Material\nDescription"};
         for (String label : header) {
-            tableBoring.addCell(new Cell().add(new Paragraph(label).setFont(bold)).setFontSize(9));
+            tableBoring.addCell(new Cell().add(new Paragraph(label).setFont(bold)).setFontSize(9).setPaddingLeft(4));
         }
 
         // Creates empty margin between log heading and log
@@ -87,7 +87,7 @@ public class BoringPDF {
         }
 
         float topDepth = 0f;
-        Cell boringCell = new Cell().setFont(font).setFontSize(9).setBorderTop(new DashedBorder(0.6f)).setBorderRight(Border.NO_BORDER).setBorderLeft(Border.NO_BORDER).setBorderBottom(Border.NO_BORDER);
+        Cell boringCell = new Cell().setFont(font).setFontSize(9).setBorderTop(new DashedBorder(0.6f)).setBorderRight(Border.NO_BORDER).setBorderLeft(Border.NO_BORDER).setBorderBottom(Border.NO_BORDER).setPaddingLeft(6);
 
         for(int i = 0; i < depths.size(); i++) {
             float depth = depths.get(i);
@@ -106,20 +106,20 @@ public class BoringPDF {
             Paragraph pattern = new Paragraph();
 
             // calculate how many pattern elements fit into graphic boring log cell paragraph
-            int amount = (int) Math.ceil((thickness * scale)/10f * 6f);
+            int amount = (int) Math.ceil((thickness * scale)/10f * 5f);
 
             // Place pattern elements into graphic boring log cell paragraph
             for (int j = 0; j < amount; j++) {
                 pattern.add(pdfImg);
             }
 
-            tableBoring.addCell(new Cell().setVerticalAlignment(VerticalAlignment.MIDDLE).setPadding(0).add(pattern).setHeight(thickness*scale));
+            tableBoring.addCell(new Cell().setVerticalAlignment(VerticalAlignment.MIDDLE).setPaddingLeft(1).setPaddingRight(0).setPaddingTop(0).setPaddingBottom(0).add(pattern).setHeight(thickness*scale));
             // Top Depth
-            tableBoring.addCell(boringCell.clone(false).add(new Paragraph("\t"+df.format(topDepth))));
+            tableBoring.addCell(boringCell.clone(false).add(new Paragraph(df.format(topDepth))));
             // Thickness
-            tableBoring.addCell(boringCell.clone(false).add(new Paragraph("\t"+df.format(thickness))));
+            tableBoring.addCell(boringCell.clone(false).add(new Paragraph(df.format(thickness))));
             // Bottom Elevation
-            tableBoring.addCell(boringCell.clone(false).add(new Paragraph("\t-" + depth)));
+            tableBoring.addCell(boringCell.clone(false).add(new Paragraph(df.format(depth))));
             // Material Description
             tableBoring.addCell(boringCell.clone(false).add(new Paragraph(descriptions.get(i))));
             topDepth += thickness;
@@ -127,7 +127,7 @@ public class BoringPDF {
 
         // Total depth at log bottom
         boringCell.setBorderTop(Border.NO_BORDER);
-        tableBoring.addCell(boringCell.clone(false).add(new Paragraph(depths.get(depths.size() -1) + " FT bgs").setFont(font)).setFontSize(9));
+        tableBoring.addCell(boringCell.clone(false).add(new Paragraph(depths.get(depths.size() -1) + " FT bgs").setFont(font)).setFontSize(9).setPadding(0));
         for (int i = 0; i < 4; i++) {
             tableBoring.addCell(boringCell);
         }
