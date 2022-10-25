@@ -36,8 +36,8 @@ public class ConstructionPDF {
 
     public String[] make() throws IOException {
         String fileName = boringData.getId() + " " + boringData.getLocation() + " Construction Log.pdf";
-        String filePath = "output/" + new Date().toInstant().toString() + fileName;
-//        String filePath = "output/Construction.pdf";
+//        String filePath = "output/" + new Date().toInstant().toString() + fileName;
+        String filePath = "output/Construction.pdf";
 
         PdfWriter writer = new PdfWriter(new FileOutputStream(filePath));
         PdfDocument pdf = new PdfDocument(writer);
@@ -67,7 +67,7 @@ public class ConstructionPDF {
             throw new RuntimeException(e);
         }
 
-        String[] header = {"Description\nof String", "String\nType", "Depth:From - To (FT)", "Graphical Log", "Depth:From - To (FT)", "Annular Fill\nMaterial", "Description\nof Material"};
+        String[] header = {"Description of String", "String\nType", "Depth:\nFrom - To (ft)", "Graphical Log", "Depth:\nFrom - To (ft)", "Annular Fill\nMaterial", "Description of Material"};
 
         Table tableHeaders = new Table(new float[]{1.5f,0.75f,0.75f,0.55f,0.75f,0.75f,1.5f},true);
 
@@ -85,7 +85,7 @@ public class ConstructionPDF {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        DecimalFormat df = new DecimalFormat("0.0");
+        DecimalFormat df = new DecimalFormat("0.00");
 
         HashMap<String,String> fillMaterial = new HashMap<>(){{
             put("backFill", "Back Fill");
@@ -96,6 +96,12 @@ public class ConstructionPDF {
         ArrayList<Float> depths = boringData.getMaterialDepths();
         ArrayList<String> types = boringData.getMaterialTypes();
         ArrayList<String> descriptions = boringData.getMaterialDescriptions();
+        float standupHeightCorrected;
+        if (boringData.getStandupHeight() < 0.4f) {
+            standupHeightCorrected = 0.4f;
+        } else {
+            standupHeightCorrected = boringData.getStandupHeight();
+        }
 
         float scale = (float) Math.floor(31/(depths.get(depths.size() -1) + boringData.getStandupHeight()) * 20);
         if (scale > 34) {
@@ -116,49 +122,56 @@ public class ConstructionPDF {
 
         // STANDUP data if it exists
         if (boringData.getStandupHeight() > 0) {
-            wellTable.addCell(dataCell.clone(false).add(new Paragraph(boringData.getCasingDescription())).setHeight(boringData.getStandupHeight()*scale));
+            wellTable.addCell(dataCell.clone(false).add(new Paragraph(boringData.getCasingDescription())).setHeight(standupHeightCorrected*scale));
             wellTable.addCell(dataCell.clone(false).add(new Paragraph("Standup")));
-            wellTable.addCell(dataCell.clone(false).add(new Paragraph(boringData.getStandupHeight() + " - 0.0")));
+            wellTable.addCell(dataCell.clone(false).add(new Paragraph(df.format(boringData.getStandupHeight()) + " - 0.00")));
         }
 
         // CASING data
         wellTable.addCell(dataCell.clone(false).add(new Paragraph(boringData.getCasingDescription())).setHeight(boringData.getCasingDepth()*scale));
         wellTable.addCell(dataCell.clone(false).add(new Paragraph("Riser")));
-        wellTable.addCell(dataCell.clone(false).add(new Paragraph("0.0 - " + boringData.getCasingDepth())));
+        wellTable.addCell(dataCell.clone(false).add(new Paragraph("0.00 - " + df.format(boringData.getCasingDepth()))));
 
         // SCREEN data
         wellTable.addCell(dataCell.clone(false).add(new Paragraph(boringData.getScreenDescription())));
         wellTable.addCell(dataCell.clone(false).add(new Paragraph("Screen")));
-        wellTable.addCell(dataCell.clone(false).add(new Paragraph(df.format(boringData.getCasingDepth()) + " - " + boringData.getScreenDepth())));
+        wellTable.addCell(dataCell.clone(false).add(new Paragraph(df.format(boringData.getCasingDepth()) + " - " + df.format(boringData.getScreenDepth()))));
 
         outerTable.addCell(new Cell().add(wellTable).setPadding(0).setBorder(Border.NO_BORDER));
 
         // Tables for Material data and Material graphic log
         Table materialTable = new Table(new float[]{0.75f,0.75f,1.5f},true);
         Table materialGraphicTable = new Table(UnitValue.createPercentArray(1)).useAllAvailableWidth();
-        float topDepth = 0f;
+        float totalDepth = 0f;
 
         // Add padding to top of Material data and Material graphic log if STANDUP exists
         if (boringData.getStandupHeight() > 0) {
-            materialGraphicTable.addCell(new Cell().setVerticalAlignment(VerticalAlignment.MIDDLE).setPaddingTop(0).setPaddingBottom(0.5f).setBorder(Border.NO_BORDER).setHeight(boringData.getStandupHeight()*scale));
-            materialTable.addCell(new Cell(1,3).setBorder(Border.NO_BORDER).setPadding(0).setHeight(boringData.getStandupHeight()*scale));
+            materialGraphicTable.addCell(new Cell().setVerticalAlignment(VerticalAlignment.MIDDLE).setPaddingTop(0).setPaddingBottom(0.5f).setBorder(Border.NO_BORDER).setHeight(standupHeightCorrected*scale));
+            materialTable.addCell(new Cell(1,3).setBorder(Border.NO_BORDER).setPadding(0).setHeight(standupHeightCorrected*scale));
         }
 
         // Loop to build Material data and Material graphic log
         for (int i = 0; i < depths.size(); i++) {
 
             float depth = depths.get(i);
-            float thickness = depth - topDepth;
+            float lastDepth = 0;
+            if (i > 0) {
+                lastDepth = depths.get(i-1);
+            }
+            float thickness = depth - totalDepth;
+            if (thickness < 0.4f) {
+                thickness = 0.4f;
+            }
 
             String patternLocation = "src/main/resources/patterns/" + types.get(i) + ".png";
             Paragraph pattern = patternBuilder(scale, thickness, patternLocation, true);
 
-            materialTable.addCell(dataCell.clone(false).add(new Paragraph(df.format(topDepth) + " - " + depth)).setHeight(thickness*scale));
+            materialTable.addCell(dataCell.clone(false).add(new Paragraph(df.format(lastDepth) + " - " + df.format(depth))).setHeight(thickness*scale));
             materialTable.addCell(dataCell.clone(false).add(new Paragraph(fillMaterial.get(types.get(i)))));
             materialTable.addCell(dataCell.clone(false).add(new Paragraph(descriptions.get(i))));
 
             materialGraphicTable.addCell(graphicCell.clone(false).add(pattern).setHeight(thickness*scale));
-            topDepth += thickness;
+            totalDepth += thickness;
         }
 
         // Center Graphical String Log
@@ -166,7 +179,7 @@ public class ConstructionPDF {
 
         // Build STANDUP graphic if one exists
         if (boringData.getStandupHeight() > 0) {
-            stringTable.addCell(new Cell().setVerticalAlignment(VerticalAlignment.MIDDLE).setPadding(0).setHeight(boringData.getStandupHeight()*scale));
+            stringTable.addCell(new Cell().setVerticalAlignment(VerticalAlignment.MIDDLE).setPadding(0).setHeight(standupHeightCorrected*scale));
         }
 
         // Build CASING graphic
@@ -199,7 +212,7 @@ public class ConstructionPDF {
 
         // Add Total Depth to bottom of graphical log
         outerTable.addCell(new Cell(1,1).setPadding(0).setBorder(Border.NO_BORDER));
-        outerTable.addCell(new Cell(1,3).add(new Paragraph((boringData.getScreenDepth() > depths.get(depths.size()-1) ? Float.toString(boringData.getScreenDepth()) : depths.get(depths.size() - 1) + " ft T.D."))).setFont(font).setFontSize(9).setBorder(Border.NO_BORDER).setPadding(0));
+        outerTable.addCell(new Cell(1,3).add(new Paragraph((df.format(depths.get(depths.size() - 1)) + " ft T.D."))).setFont(font).setFontSize(8.25f).setBorder(Border.NO_BORDER).setPadding(0));
         outerTable.addCell(new Cell(1,1).setPadding(0).setBorder(Border.NO_BORDER));
 
         return outerTable;
@@ -232,7 +245,7 @@ public class ConstructionPDF {
     public static void main(String[] args) throws IOException {
         // TEST
 
-        String boringObj = "{\"id\":\"MW-1\",\"location\":\"123 Franklin St, Chesapeake, VA\",\"siteName\":\"Albert Property\",\"logBy\":\"Dog Bounty\",\"company\":\"Steve's Holes Inc.\",\"equip\":\"Hand Auger\",\"date\":\"2021-09-13\",\"time\":\"07:50\",\"depths\":[\"1\",\"4\",\"8\",\"16\"],\"types\":[\"topSoil\",\"clay\",\"claySand\",\"sand\"],\"descriptions\":[\"Topsoil\",\"Hard red clay\",\"Loose beige clay sand\",\"Dark petroleum contaminated sand\"],\"standupHeight\":\"0.5\",\"casingDepth\":\"2\",\"casingDesc\":\"Two-inch solid PVC\",\"screenDepth\":\"16\",\"screenDesc\":\"Two-inch slotted PVC\",\"materialDepths\":[\"0.5\",\"1\",\"16\"],\"materialTypes\":[\"backFill\",\"seal\",\"filterPack\"],\"materialDescriptions\":[\"Topsoil\",\"Medium Bentonite Chips\",\"No. 2 Gravel Pack\"]}";
+        String boringObj = "{\"id\":\"MW-1\",\"location\":\"123 Franklin St, Chesapeake, VA\",\"siteName\":\"Albert Property\",\"logBy\":\"Dog Bounty\",\"company\":\"Steve's Holes Inc.\",\"equip\":\"Hand Auger\",\"date\":\"2021-09-13\",\"time\":\"07:50\",\"depths\":[\"1\",\"4\",\"8\",\"16\"],\"types\":[\"topSoil\",\"clay\",\"claySand\",\"sand\"],\"descriptions\":[\"Topsoil\",\"Hard red clay\",\"Loose beige clay sand\",\"Dark petroleum contaminated sand\"],\"standupHeight\":\"0.25\",\"casingDepth\":\"2\",\"casingDesc\":\"Two-inch solid PVC\",\"screenDepth\":\"16\",\"screenDesc\":\"Two-inch slotted PVC\",\"materialDepths\":[\"0.25\",\"0.5\",\"16\"],\"materialTypes\":[\"backFill\",\"seal\",\"filterPack\"],\"materialDescriptions\":[\"Topsoil\",\"Medium Bentonite Chips\",\"No. 2 Gravel Pack\"]}";
 
         new ConstructionPDF(boringObj).make();
     }
