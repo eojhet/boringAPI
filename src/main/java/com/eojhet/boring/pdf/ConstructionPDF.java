@@ -96,6 +96,12 @@ public class ConstructionPDF {
         ArrayList<Float> depths = boringData.getMaterialDepths();
         ArrayList<String> types = boringData.getMaterialTypes();
         ArrayList<String> descriptions = boringData.getMaterialDescriptions();
+        float standupHeightCorrected;
+        if (boringData.getStandupHeight() < 0.4f) {
+            standupHeightCorrected = 0.4f;
+        } else {
+            standupHeightCorrected = boringData.getStandupHeight();
+        }
 
         float scale = (float) Math.floor(31/(depths.get(depths.size() -1) + boringData.getStandupHeight()) * 20);
         if (scale > 34) {
@@ -116,7 +122,7 @@ public class ConstructionPDF {
 
         // STANDUP data if it exists
         if (boringData.getStandupHeight() > 0) {
-            wellTable.addCell(dataCell.clone(false).add(new Paragraph(boringData.getCasingDescription())).setHeight(boringData.getStandupHeight()*scale));
+            wellTable.addCell(dataCell.clone(false).add(new Paragraph(boringData.getCasingDescription())).setHeight(standupHeightCorrected*scale));
             wellTable.addCell(dataCell.clone(false).add(new Paragraph("Standup")));
             wellTable.addCell(dataCell.clone(false).add(new Paragraph(boringData.getStandupHeight() + " - 0.0")));
         }
@@ -140,8 +146,8 @@ public class ConstructionPDF {
 
         // Add padding to top of Material data and Material graphic log if STANDUP exists
         if (boringData.getStandupHeight() > 0) {
-            materialGraphicTable.addCell(new Cell().setVerticalAlignment(VerticalAlignment.MIDDLE).setPaddingTop(0).setPaddingBottom(0.5f).setBorder(Border.NO_BORDER).setHeight(boringData.getStandupHeight()*scale));
-            materialTable.addCell(new Cell(1,3).setBorder(Border.NO_BORDER).setPadding(0).setHeight(boringData.getStandupHeight()*scale));
+            materialGraphicTable.addCell(new Cell().setVerticalAlignment(VerticalAlignment.MIDDLE).setPaddingTop(0).setPaddingBottom(0.5f).setBorder(Border.NO_BORDER).setHeight(standupHeightCorrected*scale));
+            materialTable.addCell(new Cell(1,3).setBorder(Border.NO_BORDER).setPadding(0).setHeight(standupHeightCorrected*scale));
         }
 
         // Loop to build Material data and Material graphic log
@@ -149,6 +155,10 @@ public class ConstructionPDF {
 
             float depth = depths.get(i);
             float thickness = depth - topDepth;
+
+            if (depth < 0.4f) {
+                thickness = 0.4f - topDepth;
+            }
 
             String patternLocation = "src/main/resources/patterns/" + types.get(i) + ".png";
             Paragraph pattern = patternBuilder(scale, thickness, patternLocation, true);
@@ -166,7 +176,7 @@ public class ConstructionPDF {
 
         // Build STANDUP graphic if one exists
         if (boringData.getStandupHeight() > 0) {
-            stringTable.addCell(new Cell().setVerticalAlignment(VerticalAlignment.MIDDLE).setPadding(0).setHeight(boringData.getStandupHeight()*scale));
+            stringTable.addCell(new Cell().setVerticalAlignment(VerticalAlignment.MIDDLE).setPadding(0).setHeight(standupHeightCorrected*scale));
         }
 
         // Build CASING graphic
@@ -232,7 +242,7 @@ public class ConstructionPDF {
     public static void main(String[] args) throws IOException {
         // TEST
 
-        String boringObj = "{\"id\":\"MW-1\",\"location\":\"123 Franklin St, Chesapeake, VA\",\"siteName\":\"Albert Property\",\"logBy\":\"Dog Bounty\",\"company\":\"Steve's Holes Inc.\",\"equip\":\"Hand Auger\",\"date\":\"2021-09-13\",\"time\":\"07:50\",\"depths\":[\"1\",\"4\",\"8\",\"16\"],\"types\":[\"topSoil\",\"clay\",\"claySand\",\"sand\"],\"descriptions\":[\"Topsoil\",\"Hard red clay\",\"Loose beige clay sand\",\"Dark petroleum contaminated sand\"],\"standupHeight\":\"0.5\",\"casingDepth\":\"2\",\"casingDesc\":\"Two-inch solid PVC\",\"screenDepth\":\"16\",\"screenDesc\":\"Two-inch slotted PVC\",\"materialDepths\":[\"0.5\",\"1\",\"16\"],\"materialTypes\":[\"backFill\",\"seal\",\"filterPack\"],\"materialDescriptions\":[\"Topsoil\",\"Medium Bentonite Chips\",\"No. 2 Gravel Pack\"]}";
+        String boringObj = "{\"id\":\"MW-1\",\"location\":\"123 Franklin St, Chesapeake, VA\",\"siteName\":\"Albert Property\",\"logBy\":\"Dog Bounty\",\"company\":\"Steve's Holes Inc.\",\"equip\":\"Hand Auger\",\"date\":\"2021-09-13\",\"time\":\"07:50\",\"depths\":[\"1\",\"4\",\"8\",\"16\"],\"types\":[\"topSoil\",\"clay\",\"claySand\",\"sand\"],\"descriptions\":[\"Topsoil\",\"Hard red clay\",\"Loose beige clay sand\",\"Dark petroleum contaminated sand\"],\"standupHeight\":\"0.5\",\"casingDepth\":\"2\",\"casingDesc\":\"Two-inch solid PVC\",\"screenDepth\":\"16\",\"screenDesc\":\"Two-inch slotted PVC\",\"materialDepths\":[\"0.25\",\"1\",\"16\"],\"materialTypes\":[\"backFill\",\"seal\",\"filterPack\"],\"materialDescriptions\":[\"Topsoil\",\"Medium Bentonite Chips\",\"No. 2 Gravel Pack\"]}";
 
         new ConstructionPDF(boringObj).make();
     }
