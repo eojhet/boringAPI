@@ -90,8 +90,16 @@ public class BoringPDF {
         Cell boringCell = new Cell().setFont(font).setFontSize(9).setBorderTop(new DashedBorder(0.6f)).setBorderRight(Border.NO_BORDER).setBorderLeft(Border.NO_BORDER).setBorderBottom(Border.NO_BORDER).setPaddingLeft(6);
 
         for(int i = 0; i < depths.size(); i++) {
+
             float depth = depths.get(i);
+            float lastDepth = 0;
+            if (i > 0) {
+                lastDepth = depths.get(i-1);
+            }
             float thickness = depth - topDepth;
+            if (thickness < 0.5f) {
+                thickness = 0.5f;
+            }
 
             // Build image data from png and pattern inside of paragraph to insert into log cell
             String patternLocation = "src/main/resources/patterns/" + types.get(i) + ".png";
@@ -115,9 +123,9 @@ public class BoringPDF {
 
             tableBoring.addCell(new Cell().setVerticalAlignment(VerticalAlignment.MIDDLE).setPaddingLeft(1).setPaddingRight(0).setPaddingTop(0).setPaddingBottom(0).add(pattern).setHeight(thickness*scale));
             // Top Depth
-            tableBoring.addCell(boringCell.clone(false).add(new Paragraph(df.format(topDepth))));
+            tableBoring.addCell(boringCell.clone(false).add(new Paragraph(df.format(lastDepth))));
             // Thickness
-            tableBoring.addCell(boringCell.clone(false).add(new Paragraph(df.format(thickness))));
+            tableBoring.addCell(boringCell.clone(false).add(new Paragraph(df.format(depth - lastDepth))));
             // Bottom Elevation
             tableBoring.addCell(boringCell.clone(false).add(new Paragraph(df.format(depth))));
             // Material Description
@@ -136,7 +144,7 @@ public class BoringPDF {
     }
 
     public static void main(String[] args) throws IOException {
-        String boringObj = "{\"id\":\"MW-1\",\"location\":\"69 Freeway Junction\",\"siteName\":\"The Homestead\",\"logBy\":\"Joe G\",\"company\":\"Bay Env\",\"equip\":\"Hand Auger\",\"date\":\"2021-09-13\",\"time\":\"07:50\",\"depths\":[\"2\",\"5.5\",\"13.5\",\"30\"],\"types\":[\"topSoil\",\"clay\",\"siltyClay\",\"silt\"],\"descriptions\":[\"Topsoil\",\"Clay\",\"Silty Clay\",\"Silt\"]}";
+        String boringObj = "{\"id\":\"MW-1\",\"location\":\"69 Freeway Junction\",\"siteName\":\"The Homestead\",\"logBy\":\"Joe G\",\"company\":\"Bay Env\",\"equip\":\"Hand Auger\",\"date\":\"2021-09-13\",\"time\":\"07:50\",\"depths\":[\"0.25\",\"0.5\",\"13.5\",\"30\"],\"types\":[\"topSoil\",\"clay\",\"siltyClay\",\"silt\"],\"descriptions\":[\"Topsoil\",\"Clay\",\"Silty Clay\",\"Silt\"]}";
 
         new BoringPDF(boringObj).make();
     }

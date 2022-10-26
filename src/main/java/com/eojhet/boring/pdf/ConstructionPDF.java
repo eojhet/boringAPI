@@ -36,8 +36,8 @@ public class ConstructionPDF {
 
     public String[] make() throws IOException {
         String fileName = boringData.getId() + " " + boringData.getLocation() + " Construction Log.pdf";
-//        String filePath = "output/" + new Date().toInstant().toString() + fileName;
-        String filePath = "output/Construction.pdf";
+        String filePath = "output/" + new Date().toInstant().toString() + fileName;
+//        String filePath = "output/Construction.pdf";
 
         PdfWriter writer = new PdfWriter(new FileOutputStream(filePath));
         PdfDocument pdf = new PdfDocument(writer);
@@ -97,13 +97,13 @@ public class ConstructionPDF {
         ArrayList<String> types = boringData.getMaterialTypes();
         ArrayList<String> descriptions = boringData.getMaterialDescriptions();
         float standupHeightCorrected;
-        if (boringData.getStandupHeight() < 0.4f) {
-            standupHeightCorrected = 0.4f;
+        if (boringData.getStandupHeight() < 0.5f) {
+            standupHeightCorrected = 0.5f;
         } else {
             standupHeightCorrected = boringData.getStandupHeight();
         }
 
-        float scale = (float) Math.floor(31/(depths.get(depths.size() -1) + boringData.getStandupHeight()) * 20);
+        float scale = (float) Math.floor(31/(depths.get(depths.size() -1) + standupHeightCorrected) * 20);
         if (scale > 34) {
             scale = 34;
         }
@@ -159,8 +159,8 @@ public class ConstructionPDF {
                 lastDepth = depths.get(i-1);
             }
             float thickness = depth - totalDepth;
-            if (thickness < 0.4f) {
-                thickness = 0.4f;
+            if (thickness < 0.5f) {
+                thickness = 0.5f;
             }
 
             String patternLocation = "src/main/resources/patterns/" + types.get(i) + ".png";
@@ -244,8 +244,9 @@ public class ConstructionPDF {
 
     public static void main(String[] args) throws IOException {
         // TEST
+        // MAX 25 feet with any thickness of 0.5 or less
 
-        String boringObj = "{\"id\":\"MW-1\",\"location\":\"123 Franklin St, Chesapeake, VA\",\"siteName\":\"Albert Property\",\"logBy\":\"Dog Bounty\",\"company\":\"Steve's Holes Inc.\",\"equip\":\"Hand Auger\",\"date\":\"2021-09-13\",\"time\":\"07:50\",\"depths\":[\"1\",\"4\",\"8\",\"16\"],\"types\":[\"topSoil\",\"clay\",\"claySand\",\"sand\"],\"descriptions\":[\"Topsoil\",\"Hard red clay\",\"Loose beige clay sand\",\"Dark petroleum contaminated sand\"],\"standupHeight\":\"0.25\",\"casingDepth\":\"2\",\"casingDesc\":\"Two-inch solid PVC\",\"screenDepth\":\"16\",\"screenDesc\":\"Two-inch slotted PVC\",\"materialDepths\":[\"0.25\",\"0.5\",\"16\"],\"materialTypes\":[\"backFill\",\"seal\",\"filterPack\"],\"materialDescriptions\":[\"Topsoil\",\"Medium Bentonite Chips\",\"No. 2 Gravel Pack\"]}";
+        String boringObj = "{\"id\":\"MW-1\",\"location\":\"123 Franklin St, Chesapeake, VA\",\"siteName\":\"Albert Property\",\"logBy\":\"Dog Bounty\",\"company\":\"Steve's Holes Inc.\",\"equip\":\"Hand Auger\",\"date\":\"2021-09-13\",\"time\":\"07:50\",\"depths\":[\"1\",\"4\",\"8\",\"16\"],\"types\":[\"topSoil\",\"clay\",\"claySand\",\"sand\"],\"descriptions\":[\"Topsoil\",\"Hard red clay\",\"Loose beige clay sand\",\"Dark petroleum contaminated sand\"],\"standupHeight\":\"0.25\",\"casingDepth\":\"2\",\"casingDesc\":\"Two-inch solid PVC\",\"screenDepth\":\"16\",\"screenDesc\":\"Two-inch slotted PVC\",\"materialDepths\":[\"0.25\",\"0.5\",\"25\"],\"materialTypes\":[\"backFill\",\"seal\",\"filterPack\"],\"materialDescriptions\":[\"Topsoil\",\"Medium Bentonite Chips\",\"No. 2 Gravel Pack\"]}";
 
         new ConstructionPDF(boringObj).make();
     }
