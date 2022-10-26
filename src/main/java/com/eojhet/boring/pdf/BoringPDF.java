@@ -35,8 +35,8 @@ public class BoringPDF {
 
     public String[] make() throws IOException {
         String fileName = boringData.getId() + " " + boringData.getLocation();
-        String filePath = "output/" + new Date().toInstant().toString() + fileName + " Boring Log.pdf";
-//        String filePath = "output/BoringTest.pdf";
+//        String filePath = "output/" + new Date().toInstant().toString() + fileName + " Boring Log.pdf";
+        String filePath = "output/BoringTest.pdf";
 
         PdfWriter writer = new PdfWriter(new FileOutputStream(filePath));
         PdfDocument pdf = new PdfDocument(writer);
